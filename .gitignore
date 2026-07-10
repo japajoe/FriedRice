@@ -1,0 +1,3 @@
+**/*.meta
+/Resources
+/Scripts/GraphicsTester.cs
