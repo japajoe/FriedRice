@@ -231,21 +231,23 @@ namespace FriedRice.Core
             width = 0.0f;
             height = 0.0f;
 
+            if(text.IsEmpty)
+                return;
+
             Int32 currentLineWidth = 0; // Width of the current line
             Int32 lineCount = 1;
 
             for (int i = 0; i < text.Length; i++)
             {
-                UInt32 codePointSize = 0;
-                UInt32 codepoint = GetCodePoint(text, i, out codePointSize);
-                char c = text[i];
+                UInt32 codepoint = GetCodePoint(text, i, out UInt32 codePointSize);
 
                 if (codepoint == 0)
                 {
                     continue;
                 }
 
-                if (c == '\n')
+                // New line character
+                if (codepoint == 10)
                 {
                     // End of a line
                     if (currentLineWidth > width)
