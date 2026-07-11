@@ -1,3 +1,4 @@
 **/*.meta
 /Resources
 /Scripts/GraphicsTester.cs
+/Scripts/UI/*

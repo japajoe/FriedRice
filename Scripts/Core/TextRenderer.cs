@@ -95,8 +95,10 @@ namespace FriedRice.Core
 
             int mainTexId = Shader.PropertyToID("_MainTex");
             int clipRectId = Shader.PropertyToID("_ClipRect");
+            int screenSizeId = Shader.PropertyToID("_ScreenSize");
 
             Texture2D lastTexture = null;
+            Vector4 screenSize = new Vector4(Screen.width, Screen.height, 0, 0);
 
             for (int i = 0; i < currentBatchCount; i++)
             {
@@ -110,6 +112,7 @@ namespace FriedRice.Core
                 
                 Vector4 clippingRect = new Vector4(batch.clippingRect.x, batch.clippingRect.y, batch.clippingRect.width, batch.clippingRect.height);
                 material.SetVector(clipRectId, clippingRect);
+                material.SetVector(screenSizeId, screenSize);
                 
                 material.SetPass(0);
 

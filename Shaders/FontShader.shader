@@ -50,20 +50,21 @@ Shader "FriedRice/FontShader"
 
             fixed4 frag (v2f i) : SV_Target
             {
-                // Convert projections to absolute screen space pixel coordinates
-                float2 pixelPos = i.screenPos.xy / i.screenPos.w;
-                pixelPos.x *= _ScreenParams.x;
+                float2 pixelPos = i.vertex.xy;
                 
-                // Invert the pixel Y position because Unity's ScreenPos starts at the bottom-left (0,0), 
-                pixelPos.y = _ScreenParams.y - (pixelPos.y * _ScreenParams.y);
+                // Flip Y component to convert from Unity's bottom-left to top-left coordinate space
+                pixelPos.y = _ScreenParams.y - pixelPos.y;
 
-                float clipWidth = _ClipRect.z - _ClipRect.x;
-                float clipHeight = _ClipRect.w - _ClipRect.y;
+                float clipWidth = _ClipRect.z;
+                float clipHeight = _ClipRect.w;
 
                 if (clipWidth > 0.0 && clipHeight > 0.0)
                 {
+                    float xMax = _ClipRect.x + _ClipRect.z;
+                    float yMax = _ClipRect.y + _ClipRect.w;
+
                     if (pixelPos.x < _ClipRect.x || pixelPos.y < _ClipRect.y || 
-                        pixelPos.x > _ClipRect.z || pixelPos.y > _ClipRect.w)
+                        pixelPos.x > xMax || pixelPos.y > yMax)
                     {
                         discard;
                     }
