@@ -62,6 +62,8 @@ namespace FriedRice.Core
 
         public void EndFrame()
         {
+            mesh.Clear();
+
             if (currentVertexCount > 0)
             {
                 mesh.SetVertices(vertices, 0, currentVertexCount);
@@ -87,10 +89,6 @@ namespace FriedRice.Core
                 mesh.subMeshCount = currentBatchCount;
                 mesh.SetSubMeshes(subMeshDescriptors, 0, currentBatchCount);
                 mesh.RecalculateBounds();
-            }
-            else
-            {
-                mesh.Clear();
             }
         }
 
