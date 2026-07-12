@@ -236,6 +236,7 @@ namespace FriedRice.Core
 
             Int32 currentLineWidth = 0; // Width of the current line
             Int32 lineCount = 1;
+            float maxHeight = float.MinValue;
 
             for (int i = 0; i < text.Length; i++)
             {
@@ -266,6 +267,7 @@ namespace FriedRice.Core
 
                 // Accumulate the width using the advanceX of the glyph
                 currentLineWidth += pGlyph.advanceX;
+                maxHeight = Math.Max(pGlyph.bearingY + pGlyph.height, maxHeight);
             }
 
             // Check the last line
@@ -280,7 +282,7 @@ namespace FriedRice.Core
             }
             else
             {
-                height = GetMaxHeight();
+                height = maxHeight;
             }
 
             width *= GetPixelScale(fontSize);
