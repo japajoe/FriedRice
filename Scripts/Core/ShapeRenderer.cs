@@ -369,6 +369,74 @@ namespace FriedRice.Core
             }
         }
 
+        public void DrawCircle(Vector2 center, float radius, Color color, Texture2D texture = null, Rect clippingRect = default)
+        {
+            const int segments = 32;
+            int totalVertices = segments + 1;
+            int totalIndices = segments * 3;
+            int batchTriangleStart = currentTriangleCount;
+
+            EnsureListCapacity(currentVertexCount + totalVertices, currentTriangleCount + totalIndices);
+
+            float centerX = center.x;
+            float centerY = Screen.height - center.y;
+            Color linearColor = color.linear;
+
+            int centerVertexIndex = currentVertexCount;
+            vertices[centerVertexIndex] = new Vector3(centerX, centerY, 0f);
+            uvs[centerVertexIndex] = new Vector2(0.5f, 0.5f);
+            colors[centerVertexIndex] = linearColor;
+
+            int perimeterStartVertex = centerVertexIndex + 1;
+
+            for (int i = 0; i < segments; i++)
+            {
+                float angle = (float)i * (Mathf.PI * 2.0f) / segments;
+                float cos = Mathf.Cos(angle);
+                float sin = Mathf.Sin(angle);
+
+                float xpos = centerX + cos * radius;
+                float ypos = centerY + sin * radius;
+
+                int vertIdx = perimeterStartVertex + i;
+                vertices[vertIdx] = new Vector3(xpos, ypos, 0f);
+                uvs[vertIdx] = new Vector2(cos * 0.5f + 0.5f, sin * 0.5f + 0.5f);
+                colors[vertIdx] = linearColor;
+            }
+
+            int indexPtr = currentTriangleCount;
+            for (int i = 0; i < segments; i++)
+            {
+                int currentPerimeterIdx = perimeterStartVertex + i;
+                int nextPerimeterIdx = perimeterStartVertex + ((i + 1) % segments);
+
+                triangles[indexPtr + 0] = centerVertexIndex;
+                triangles[indexPtr + 1] = nextPerimeterIdx;
+                triangles[indexPtr + 2] = currentPerimeterIdx;
+                indexPtr += 3;
+            }
+
+            currentVertexCount += totalVertices;
+            currentTriangleCount += totalIndices;
+
+            int batchTriangleCount = currentTriangleCount - batchTriangleStart;
+
+            if (batchTriangleCount > 0)
+            {
+                EnsureBatchCapacity(currentBatchCount + 1);
+
+                batches[currentBatchCount] = new RenderBatch
+                {
+                    texture = texture == null ? defaultTexture : texture,
+                    triangleStart = batchTriangleStart,
+                    triangleCount = batchTriangleCount,
+                    clippingRect = clippingRect
+                };
+
+                currentBatchCount++;
+            }
+        }
+
         public void DrawLines(ReadOnlySpan<LineSegment> lines, Color color, float thickness = 1.0f, Rect clippingRect = default)
         {
             if (lines.Length == 0)

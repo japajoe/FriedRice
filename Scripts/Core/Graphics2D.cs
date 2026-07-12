@@ -66,6 +66,11 @@ namespace FriedRice.Core
         {
             shapeRenderer.DrawRectangleEx(rect, radius, color, texture, clippingRect);
         }
+        
+        public static void DrawCircle(Vector2 center, float radius, Color color, Texture2D texture = null, Rect clippingRect = default)
+        {
+            shapeRenderer.DrawCircle(center, radius, color, texture, clippingRect);
+        }
 
         public static void DrawLine(Vector2 from, Vector2 to, Color color, float thickness = 1.0f, Rect clippingRect = default)
         {
