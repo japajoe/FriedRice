@@ -21,12 +21,14 @@ namespace FriedRice.Core
         private UInt32 maxHeight;
         private UInt32 lineHeight;
         private FontRenderMethod renderMethod;
+        private bool roundAdvanceValue;
         private bool isLoaded;
         private const Int32 ATLAS_SIZE = 2048;
         private const int MAX_GLYPHS = UInt16.MaxValue;
 
         public Texture2D Texture => texture;
         public bool IsLoaded => isLoaded;
+        public FontRenderMethod RenderMethod => renderMethod;
 
         public Font()
         {
@@ -41,16 +43,18 @@ namespace FriedRice.Core
             maxHeight = 0;
             lineHeight = 0;
             renderMethod = FontRenderMethod.Normal;
+            roundAdvanceValue = true;
             isLoaded = false;
         }
 
-        public bool Generate(string filePath, Int32 pixelSize, FontRenderMethod renderMethod, bool generateTexture = true)
+        public bool Generate(string filePath, Int32 pixelSize, FontRenderMethod renderMethod, bool generateTexture = true, bool roundAdvanceValue = true)
         {
             if (texture != null)
                 return true;
 
             this.pixelSize = (UInt32)pixelSize;
             this.renderMethod = renderMethod;
+            this.roundAdvanceValue = roundAdvanceValue;
 
             FT_LibraryRec_* pFt = null;
 
@@ -95,13 +99,14 @@ namespace FriedRice.Core
             return true;
         }
 
-        public bool Generate(byte[] fontData, Int32 pixelSize, FontRenderMethod renderMethod, bool generateTexture = true)
+        public bool Generate(byte[] fontData, Int32 pixelSize, FontRenderMethod renderMethod, bool generateTexture = true, bool roundAdvanceValue = true)
         {
             if (texture != null)
                 return true;
 
             this.pixelSize = (UInt32)pixelSize;
             this.renderMethod = renderMethod;
+            this.roundAdvanceValue = roundAdvanceValue;
 
             FT_LibraryRec_* pFt = null;
 
@@ -314,12 +319,33 @@ namespace FriedRice.Core
 
                 Glyph glyph = glyphs[(int)glyphIndex];
 
+                if(roundAdvanceValue)
+                {
+                    float advX = (Int32)face->glyph->advance.x / 64.0f;  // sub-pixel advance
+                    float advY = (Int32)face->glyph->advance.y / 64.0f;
+
+                    bool shouldRoundAdvance = true; // your toggle
+
+                    if (shouldRoundAdvance) 
+                    {
+                        advX = Mathf.Round(advX);  // pixel snap
+                        advY = Mathf.Round(advY);
+                    }
+
+                    glyph.advanceX = (Int32)advX;
+                    glyph.advanceY = (Int32)advY;
+                }
+                else
+                {
+                    glyph.advanceX = (Int32)face->glyph->advance.x >> 6;
+                    glyph.advanceY = (Int32)face->glyph->advance.y >> 6;
+                }
+
+                // store whatever type you prefer
                 glyph.width = (Int32)face->glyph->bitmap.width;
                 glyph.height = (Int32)face->glyph->bitmap.rows;
                 glyph.bearingX = face->glyph->bitmap_left;
                 glyph.bearingY = face->glyph->bitmap_top;
-                glyph.advanceX = (Int32)face->glyph->advance.x >> 6;
-                glyph.advanceY = (Int32)face->glyph->advance.y >> 6;
                 glyph.bottomBearing = (Int32)(face->glyph->bitmap.rows - face->glyph->bitmap_top);
                 glyph.leftBearing = (Int32)(face->glyph->bitmap.width - face->glyph->bitmap_left);
                 glyph.loaded = 0;

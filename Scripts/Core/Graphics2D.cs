@@ -57,6 +57,11 @@ namespace FriedRice.Core
             textRenderer.EndFrame();
         }
 
+        public static void DrawTriangle(Vector2 p1, Vector2 p2, Vector2 p3, float angleDegrees, Color color, Texture2D texture = null, Rect clippingRect = default)
+        {
+            shapeRenderer.DrawTriangle(p1, p2, p3, angleDegrees, color, texture, clippingRect);
+        }
+
         public static void DrawRectangle(Rect rect, Color color, Texture2D texture = null, Rect clippingRect = default)
         {
             shapeRenderer.DrawRectangle(rect, color, texture, clippingRect);
@@ -65,6 +70,11 @@ namespace FriedRice.Core
         public static void DrawRectangleEx(Rect rect, float radius, Color color, Texture2D texture = null, Rect clippingRect = default)
         {
             shapeRenderer.DrawRectangleEx(rect, radius, color, texture, clippingRect);
+        }
+
+        public static void DrawRectangleEx(Rect rect, float radius, float bottomLeftRadius, float bottomRightRadius, float topLeftRadius, float topRightRadius, Color color, Texture2D texture = null, Rect clippingRect = default)
+        {
+            shapeRenderer.DrawRectangleEx(rect, radius, bottomLeftRadius, bottomRightRadius, topLeftRadius, topRightRadius, color, texture, clippingRect);
         }
         
         public static void DrawCircle(Vector2 center, float radius, Color color, Texture2D texture = null, Rect clippingRect = default)
@@ -254,6 +264,7 @@ namespace FriedRice.Core
     {
         public Texture2D texture;
         public Rect clippingRect;
+        public bool SDF;
         public int triangleStart;
         public int triangleCount;
     }

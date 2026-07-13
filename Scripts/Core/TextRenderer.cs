@@ -18,6 +18,7 @@ namespace FriedRice.Core
         private int currentBatchCount;
         private Mesh mesh;
         private Material material;
+        private Material materialSDF;
 
         public TextRenderer()
         {
@@ -36,6 +37,7 @@ namespace FriedRice.Core
             mesh.MarkDynamic();
 
             material = new Material(Shader.Find("FriedRice/FontShader"));
+            materialSDF = new Material(Shader.Find("FriedRice/FontShaderSDF"));
         }
 
         public void Dispose()
@@ -56,6 +58,8 @@ namespace FriedRice.Core
 
         public void EndFrame()
         {
+            mesh.Clear();
+
             if (currentVertexCount > 0)
             {
                 mesh.SetVertices(vertices, 0, currentVertexCount);
@@ -82,10 +86,6 @@ namespace FriedRice.Core
                 mesh.SetSubMeshes(subMeshDescriptors, 0, currentBatchCount);
                 mesh.RecalculateBounds();
             }
-            else
-            {
-                mesh.Clear();
-            }
         }
 
         public void Draw()
@@ -103,18 +103,20 @@ namespace FriedRice.Core
             for (int i = 0; i < currentBatchCount; i++)
             {
                 RenderBatch batch = batches[i];
+                
+                var currentMaterial = batch.SDF ? materialSDF : material;
 
                 if(lastTexture != batch.texture)
                 {
                     lastTexture = batch.texture;
-                    material.SetTexture(mainTexId, batch.texture);
+                    currentMaterial.SetTexture(mainTexId, batch.texture);
                 }
                 
                 Vector4 clippingRect = new Vector4(batch.clippingRect.x, batch.clippingRect.y, batch.clippingRect.width, batch.clippingRect.height);
-                material.SetVector(clipRectId, clippingRect);
-                material.SetVector(screenSizeId, screenSize);
+                currentMaterial.SetVector(clipRectId, clippingRect);
+                currentMaterial.SetVector(screenSizeId, screenSize);
                 
-                material.SetPass(0);
+                currentMaterial.SetPass(0);
 
                 UnityEngine.Graphics.DrawMeshNow(mesh, Matrix4x4.identity, i);
             }
@@ -236,7 +238,8 @@ namespace FriedRice.Core
                     texture = font.Texture,
                     triangleStart = batchTriangleStart,
                     triangleCount = batchTriangleCount,
-                    clippingRect = clippingRect
+                    clippingRect = clippingRect,
+                    SDF = font.RenderMethod == FontRenderMethod.SDF ? true : false
                 };
 
                 currentBatchCount++;

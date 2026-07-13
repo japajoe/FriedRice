@@ -121,6 +121,83 @@ namespace FriedRice.Core
             }
         }
 
+        public void DrawTriangle(Vector2 p1, Vector2 p2, Vector2 p3, float angleDegrees, Color color, Texture2D texture = null, Rect clippingRect = default)
+        {
+            EnsureListCapacity(currentVertexCount + 3, currentTriangleCount + 3);
+
+            int batchTriangleStart = currentTriangleCount;
+
+            // Convert raw input coordinates to top-down screen space
+            Vector3 v0 = new Vector3(p1.x, Screen.height - p1.y, 0f);
+            Vector3 v1 = new Vector3(p2.x, Screen.height - p2.y, 0f);
+            Vector3 v2 = new Vector3(p3.x, Screen.height - p3.y, 0f);
+
+            if (Mathf.Abs(angleDegrees) > 0.0001f)
+            {
+                // Calculate centroid to serve as the local rotation origin
+                Vector3 center = (v0 + v1 + v2) / 3f;
+
+                float rad = angleDegrees * Mathf.Deg2Rad;
+                float cos = Mathf.Cos(rad);
+                float sin = Mathf.Sin(rad);
+
+                // Rotate v0 around center
+                float tx0 = v0.x - center.x;
+                float ty0 = v0.y - center.y;
+                v0.x = center.x + (tx0 * cos - ty0 * sin);
+                v0.y = center.y + (tx0 * sin + ty0 * cos);
+
+                // Rotate v1 around center
+                float tx1 = v1.x - center.x;
+                float ty1 = v1.y - center.y;
+                v1.x = center.x + (tx1 * cos - ty1 * sin);
+                v1.y = center.y + (tx1 * sin + ty1 * cos);
+
+                // Rotate v2 around center
+                float tx2 = v2.x - center.x;
+                float ty2 = v2.y - center.y;
+                v2.x = center.x + (tx2 * cos - ty2 * sin);
+                v2.y = center.y + (tx2 * sin + ty2 * cos);
+            }
+
+            vertices[currentVertexCount + 0] = v0;
+            vertices[currentVertexCount + 1] = v1;
+            vertices[currentVertexCount + 2] = v2;
+
+            uvs[currentVertexCount + 0] = new Vector2(0.5f, 1f);
+            uvs[currentVertexCount + 1] = new Vector2(0f, 0f);
+            uvs[currentVertexCount + 2] = new Vector2(1f, 0f);
+
+            Color linearColor = color.linear;
+            colors[currentVertexCount + 0] = linearColor;
+            colors[currentVertexCount + 1] = linearColor;
+            colors[currentVertexCount + 2] = linearColor;
+
+            triangles[currentTriangleCount + 0] = currentVertexCount + 0;
+            triangles[currentTriangleCount + 1] = currentVertexCount + 1;
+            triangles[currentTriangleCount + 2] = currentVertexCount + 2;
+
+            currentVertexCount += 3;
+            currentTriangleCount += 3;
+
+            int batchTriangleCount = currentTriangleCount - batchTriangleStart;
+
+            if (batchTriangleCount > 0)
+            {
+                EnsureBatchCapacity(currentBatchCount + 1);
+
+                batches[currentBatchCount] = new RenderBatch
+                {
+                    texture = texture == null ? defaultTexture : texture,
+                    triangleStart = batchTriangleStart,
+                    triangleCount = batchTriangleCount,
+                    clippingRect = clippingRect
+                };
+
+                currentBatchCount++;
+            }
+        }
+
         public void DrawRectangle(Rect rect, Color color, Texture2D texture = null, Rect clippingRect = default)
         {
             // Ensure internal list capacities are expanded before index mapping access
@@ -183,16 +260,18 @@ namespace FriedRice.Core
 
         public void DrawRectangleEx(Rect rect, float radius, Color color, Texture2D texture = null, Rect clippingRect = default)
         {
-            float bottomLeftRadius = radius;
-            float bottomRightRadius = radius;
-            float topLeftRadius = radius;
-            float topRightRadius = radius;
+            DrawRectangleEx(rect, radius, radius, radius, radius, radius, color, texture, clippingRect);
+        }
 
+        public void DrawRectangleEx(Rect rect, float radius, float bottomLeftRadius, float bottomRightRadius, float topLeftRadius, float topRightRadius, Color color, Texture2D texture = null, Rect clippingRect = default)
+        {
             float roundEdges = 1.0f * radius;
-            float roundBottomLeft = bottomLeftRadius;
-            float roundBottomRight = bottomRightRadius;
-            float roundTopLeft = topLeftRadius;
-            float roundTopRight = topRightRadius;
+
+            //Too lazy to sort this out
+            float roundTopLeft = bottomLeftRadius;
+            float roundTopRight = bottomRightRadius;
+            float roundBottomLeft = topLeftRadius;
+            float roundBottomRight = topRightRadius;
             bool usePercentage = false;
             const int cornerVertexCount = 16;
 
@@ -204,10 +283,10 @@ namespace FriedRice.Core
 
             int count = cornerVertexCount * 4;
 
-            float bl = Mathf.Max(0.0f, roundBottomLeft + roundEdges);
-            float br = Mathf.Max(0.0f, roundBottomRight + roundEdges);
-            float tl = Mathf.Max(0.0f, roundTopLeft + roundEdges);
-            float tr = Mathf.Max(0.0f, roundTopRight + roundEdges);
+            float bl = Mathf.Max(0.0f, roundBottomLeft);
+            float br = Mathf.Max(0.0f, roundBottomRight);
+            float tl = Mathf.Max(0.0f, roundTopLeft);
+            float tr = Mathf.Max(0.0f, roundTopRight);
             float f = (float)(Mathf.PI * 0.5f / Mathf.Max(1, cornerVertexCount - 1));
             float a1 = 1.0f;
             float a2 = 1.0f;
