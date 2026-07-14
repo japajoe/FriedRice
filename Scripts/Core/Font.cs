@@ -287,9 +287,25 @@ namespace FriedRice.Core
             }
             else
             {
-                height = maxHeight;
+                //height = maxHeight;
+                height = GetMaxHeight();
             }
 
+            // if (renderMethod == FontRenderMethod.SDF)
+            // {
+            //     // FreeType's internal constant SDF padding 
+            //     const float freeTypeSdfSpread = 8.0f;
+                
+            //     // Convert the 16px total vertical padding out of pixel space back into unscaled font units
+            //     float pixelScale = GetPixelScale(fontSize);
+            //     if (pixelScale > 0.0f)
+            //     {
+            //         float unscaledPadding = (freeTypeSdfSpread * 1.0f) / pixelScale;
+            //         height -= unscaledPadding;
+            //         //width -= unscaledPadding;
+            //     }
+            // }
+            
             width *= GetPixelScale(fontSize);
             height *= GetPixelScale(fontSize);
         }
@@ -410,7 +426,7 @@ namespace FriedRice.Core
                 return false;
             }
 
-            texture = new Texture2D(ATLAS_SIZE, ATLAS_SIZE, TextureFormat.R8, false);
+            texture = new Texture2D(ATLAS_SIZE, ATLAS_SIZE, TextureFormat.R8, false, true);
 
             texture.filterMode = FilterMode.Bilinear;
             texture.wrapMode = TextureWrapMode.Clamp;

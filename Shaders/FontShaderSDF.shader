@@ -74,7 +74,7 @@ Shader "FriedRice/FontShaderSDF"
                 float aaf = fwidth(d);
                 float alpha = smoothstep(0.5 - aaf, 0.5 + aaf, d);
                 
-                return fixed4(i.color.rgb, alpha) * i.color;
+                return fixed4(i.color.rgb, alpha * i.color.a);
             }
             ENDCG
         }
