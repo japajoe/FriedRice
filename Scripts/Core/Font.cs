@@ -225,6 +225,12 @@ namespace FriedRice.Core
             return yOffset;
         }
 
+        public void CalculateBounds(string text, float fontSize, out float width, out float height)
+        {
+            var s = text.AsSpan();
+            CalculateBounds(s, fontSize, out width, out height);
+        }
+
         public void CalculateBounds(string text, int size, float fontSize, out float width, out float height)
         {
             var s = text.AsSpan(0, size);
@@ -239,29 +245,25 @@ namespace FriedRice.Core
             if(text.IsEmpty)
                 return;
 
-            Int32 currentLineWidth = 0; // Width of the current line
+            Int32 currentLineWidth = 0;
             Int32 lineCount = 1;
-            float maxHeight = float.MinValue;
 
             for (int i = 0; i < text.Length; i++)
             {
                 UInt32 codepoint = GetCodePoint(text, i, out UInt32 codePointSize);
 
                 if (codepoint == 0)
-                {
                     continue;
-                }
 
                 // New line character
                 if (codepoint == 10)
                 {
-                    // End of a line
                     if (currentLineWidth > width)
                     {
                         width = (float)currentLineWidth;
                     }
-                    currentLineWidth = 0; // Reset for the next line
-                    lineCount++; // Increment line count
+                    currentLineWidth = 0;
+                    lineCount++;
                     continue;
                 }
 
@@ -270,42 +272,14 @@ namespace FriedRice.Core
                 if (pGlyph == null)
                     continue;
 
-                // Accumulate the width using the advanceX of the glyph
                 currentLineWidth += pGlyph.advanceX;
-                maxHeight = Math.Max(pGlyph.bearingY + pGlyph.height, maxHeight);
             }
 
             // Check the last line
             if (currentLineWidth > width)
-            {
                 width = (float)currentLineWidth;
-            }
 
-            if (lineCount > 1)
-            {
-                height = lineCount * GetMaxHeight();
-            }
-            else
-            {
-                //height = maxHeight;
-                height = GetMaxHeight();
-            }
-
-            // if (renderMethod == FontRenderMethod.SDF)
-            // {
-            //     // FreeType's internal constant SDF padding 
-            //     const float freeTypeSdfSpread = 8.0f;
-                
-            //     // Convert the 16px total vertical padding out of pixel space back into unscaled font units
-            //     float pixelScale = GetPixelScale(fontSize);
-            //     if (pixelScale > 0.0f)
-            //     {
-            //         float unscaledPadding = (freeTypeSdfSpread * 1.0f) / pixelScale;
-            //         height -= unscaledPadding;
-            //         //width -= unscaledPadding;
-            //     }
-            // }
-            
+            height = lineCount * GetMaxHeight();
             width *= GetPixelScale(fontSize);
             height *= GetPixelScale(fontSize);
         }

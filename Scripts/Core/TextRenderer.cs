@@ -112,7 +112,8 @@ namespace FriedRice.Core
                     currentMaterial.SetTexture(mainTexId, batch.texture);
                 }
                 
-                Vector4 clippingRect = new Vector4(batch.clippingRect.x, batch.clippingRect.y, batch.clippingRect.width, batch.clippingRect.height);
+                Rect rect = batch.clippingRect;
+                Vector4 clippingRect = new Vector4(rect.x, rect.y, rect.width, rect.height);
                 currentMaterial.SetVector(clipRectId, clippingRect);
                 currentMaterial.SetVector(screenSizeId, screenSize);
                 
